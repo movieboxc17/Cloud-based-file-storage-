@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firebase Storage Demo</title>
+</head>
+<body>
+  <input type="file" id="fileInput" />
+  <button onclick="uploadFile()">Upload File</button>
+  <div id="fileList"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL, listAll } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBdnIQqJJRuHSOuG8dvXwWI_fwIG5mqNfY",
+      authDomain: "test-162e3.firebaseapp.com",
+      databaseURL: "https://test-162e3-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "test-162e3",
+      storageBucket: "test-162e3.appspot.com",
+      messagingSenderId: "488146239006",
+      appId: "1:488146239006:web:7807db47cb85d87a56380f",
+      measurementId: "G-7ML18MXQ4H"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const storage = getStorage(app);
+    
+    const fileInput = document.getElementById('fileInput');
+    const fileList = document.getElementById('fileList');
+
+    fileInput.addEventListener('change', handleFileSelect);
+
+    function handleFileSelect() {
+      const file = fileInput.files[0];
+      uploadFile(file);
+    }
+
+    function uploadFile(file) {
+      const storageRef = ref(storage, 'files/' + file.name);
+      const uploadTask = uploadBytes(storageRef, file);
+
+      uploadTask.then((snapshot) => {
+        console.log('File uploaded successfully!');
+        displayUploadedFiles();
+      }).catch((error) => {
+        console.error('Error uploading file:', error.message);
+      });
+    }
+
+    function displayUploadedFiles() {
+      listAll(ref(storage, 'files')).then((result) => {
+        fileList.innerHTML = '';
+
+        result.items.forEach((itemRef) => {
+          getDownloadURL(itemRef).then((url) => {
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            link.textContent = itemRef.name;
+            fileList.appendChild(link);
+          });
+        });
+      }).catch((error) => {
+        console.error('Error fetching files:', error.message);
+      });
+    }
+
+    displayUploadedFiles(); // Display existing files on page load
+  </script>
+</body>
+</html>
